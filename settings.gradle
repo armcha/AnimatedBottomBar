@@ -1,0 +1,3 @@
+include ':animatedBottomBar'
+include ':app'
+rootProject.name = "sample"
