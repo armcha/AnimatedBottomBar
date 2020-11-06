@@ -1,4 +1,4 @@
-package com.armcha.animatedbottombar
+package com.armcha.animatedbottombar.animator
 
 import android.view.View
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator

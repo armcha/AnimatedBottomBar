@@ -11,6 +11,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
+import com.armcha.animatedbottombar.animator.AnimatorProvider
 import kotlinx.android.synthetic.main.bottom_bar_item.view.*
 
 internal class BottomBar(context: Context, attrs: AttributeSet? = null) : LinearLayout(context, attrs) {
@@ -59,6 +60,7 @@ internal class BottomBar(context: Context, attrs: AttributeSet? = null) : Linear
         super.onDraw(canvas)
         rectF.set(0f, DEFAULT_SHADOW_RADIUS, width.toFloat(), height.toFloat())
         val cornerRadius = config.cornerRadius
+        path.reset()
         path.addRoundRect(rectF,
                 floatArrayOf(cornerRadius, cornerRadius, cornerRadius, cornerRadius, 0f, 0f, 0f, 0f),
                 Path.Direction.CW)
@@ -81,7 +83,7 @@ internal class BottomBar(context: Context, attrs: AttributeSet? = null) : Linear
                 addView(space, params)
             } else {
                 val view = inflate(context, R.layout.bottom_bar_item, null) as ConstraintLayout
-                view.layoutTransition.setDuration(150)
+                view.layoutTransition.setDuration(100)
                 val params = LayoutParams(0, LayoutParams.MATCH_PARENT, itemWeight)
                 val isCurrent = currentIndex == currentSelectedIndex
                 val color = if (isCurrent) config.selectedTint else config.unSelectedTint
@@ -117,19 +119,18 @@ internal class BottomBar(context: Context, attrs: AttributeSet? = null) : Linear
         currentSelectedIndex = index
         val oldSelected = bottomViews[oldSelectedIndex]
         val currentSelected = bottomViews[currentSelectedIndex]
+        currentSelected.title.isVisible = oldSelected.title.text.isNotEmpty()
+        oldSelected.title.isVisible = false
+
         animatorProvider?.animate(currentSelected) {
             val selectedTint = config.selectedTint
             currentSelected.iconImageView.tint(selectedTint)
             currentSelected.title.setTextColor(ContextCompat.getColor(context, selectedTint))
-            currentSelected.title.isVisible = oldSelected.title.text.isNotEmpty()
-            currentSelected.clearAnimation()
         }
         animatorProvider?.animate(oldSelected) {
             val unSelectedTint = config.unSelectedTint
             oldSelected.iconImageView.tint(unSelectedTint)
             oldSelected.title.setTextColor(colorFrom(unSelectedTint))
-            oldSelected.title.isVisible = false
-            oldSelected.clearAnimation()
         }
     }
 

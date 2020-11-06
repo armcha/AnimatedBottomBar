@@ -10,6 +10,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
+import com.armcha.animatedbottombar.animator.AnimatedView
 
 internal class BottomBarOval(context: Context) : FrameLayout(context), AnimatedView {
 
@@ -29,7 +30,7 @@ internal class BottomBarOval(context: Context) : FrameLayout(context), AnimatedV
         isAntiAlias = true
         setShadowLayer(SHADOW_RADIUS, 0f, 0f, ContextCompat.getColor(context, R.color.gray_400))
     }
-    private var config = OvalConfig(R.color.teal_200, R.drawable.bell_outline,
+    private var config = OvalConfig(R.color.purple_500, R.color.white, R.drawable.bell_outline,
             android.R.drawable.ic_menu_close_clear_cancel)
         set(value) {
             field = value
@@ -62,6 +63,7 @@ internal class BottomBarOval(context: Context) : FrameLayout(context), AnimatedV
         ovalRectF.set(offset, offset, width.toFloat() - offset, height - offset)
         val cornerRadius = height / 2f
         val radii = List(8) { cornerRadius }.toFloatArray()
+        path.reset()
         path.addRoundRect(ovalRectF, radii, Path.Direction.CW)
         canvas.drawPath(path, paint)
     }
@@ -80,6 +82,7 @@ internal class BottomBarOval(context: Context) : FrameLayout(context), AnimatedV
 
     private fun update() {
         iconImageView.setImageResource(config.icon)
-        paint.color = ContextCompat.getColor(context, config.color)
+        iconImageView.tint(config.iconTint)
+        paint.color = ContextCompat.getColor(context, config.backgroundColor)
     }
 }

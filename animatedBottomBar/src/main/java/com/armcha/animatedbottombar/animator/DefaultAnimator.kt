@@ -1,4 +1,4 @@
-package com.armcha.animatedbottombar
+package com.armcha.animatedbottombar.animator
 
 import android.view.View
 import android.view.ViewPropertyAnimator
@@ -9,7 +9,7 @@ class DefaultAnimator : Animator {
 
     companion object {
         private const val SCALE_FACTOR = 0.75f
-        private const val DURATION = 200L
+        private const val DURATION = 160L
     }
 
     override fun startAnimation(view: View): ViewPropertyAnimator {
