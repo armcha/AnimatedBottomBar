@@ -2,7 +2,7 @@ package com.armcha.animatedbottombar
 
 import androidx.annotation.ColorRes
 
-class BottomBarConfig(@ColorRes val color: Int,
-                      @ColorRes val selectedIconTint: Int,
-                      @ColorRes val unSelectedIconTint: Int,
+class BottomBarConfig(@ColorRes val backgroundColor: Int,
+                      @ColorRes val selectedTint: Int,
+                      @ColorRes val unSelectedTint: Int,
                       val cornerRadius: Float)

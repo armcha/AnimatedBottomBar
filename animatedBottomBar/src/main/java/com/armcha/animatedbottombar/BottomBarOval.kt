@@ -38,9 +38,6 @@ internal class BottomBarOval(context: Context) : FrameLayout(context), AnimatedV
         }
 
     init {
-        log {
-            hashCode()
-        }
         setWillNotDraw(false)
         setLayerType(LAYER_TYPE_SOFTWARE, paint)
         addView(iconImageView)

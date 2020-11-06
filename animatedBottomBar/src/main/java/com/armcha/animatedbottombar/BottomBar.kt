@@ -4,41 +4,46 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.Gravity
-import android.widget.ImageView
+import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Space
-import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
+import kotlinx.android.synthetic.main.bottom_bar_item.view.*
 
 internal class BottomBar(context: Context, attrs: AttributeSet? = null) : LinearLayout(context, attrs) {
 
     companion object {
 
-        private const val SHADOW_RADIUS = 40f
+        private const val DEFAULT_SHADOW_RADIUS = 40f
         private const val DEFAULT_CORNER_RADIUS = 120f
     }
 
-    private var itemClickListener: (Int) -> Unit = {}
+    private val bottomViews = mutableListOf<ViewGroup>()
     private val path = Path()
     private val rectF = RectF()
     private val paint = Paint().apply {
-        color = Color.WHITE
         style = Paint.Style.FILL
         strokeWidth = 1f
         isAntiAlias = true
-        setShadowLayer(SHADOW_RADIUS, 0f, 0f, ContextCompat.getColor(context, R.color.gray_600))
+        setShadowLayer(DEFAULT_SHADOW_RADIUS, 0f, 0f, ContextCompat.getColor(context, R.color.gray_600))
     }
-//    private var config = BottomBarConfig(
-//        R.color.teal_200, R.drawable.bell_outline,
-//        android.R.drawable.ic_menu_close_clear_cancel)
-//        set(value) {
-//            field = value
-////            update()
-//            invalidate()
-//        }
 
+    private var itemClickListener: (Int) -> Unit = {}
+    var animatorProvider: AnimatorProvider? = null
+
+    var currentSelectedIndex = 0
+        private set
+
+    var config = BottomBarConfig(R.color.white, R.color.purple_500, R.color.gray_600,
+            DEFAULT_CORNER_RADIUS)
+        set(value) {
+            field = value
+            update()
+            invalidate()
+        }
 
     init {
         setLayerType(LAYER_TYPE_SOFTWARE, paint)
@@ -46,22 +51,17 @@ internal class BottomBar(context: Context, attrs: AttributeSet? = null) : Linear
         orientation = HORIZONTAL
         gravity = Gravity.CENTER
         weightSum = 5f
+
+        paint.color = colorFrom(config.backgroundColor)
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        rectF.set(
-            SHADOW_RADIUS / 2,
-            SHADOW_RADIUS,
-            width.toFloat() - SHADOW_RADIUS / 2,
-            height.toFloat() - paint.strokeWidth / 2
-        )
-        val cornerRadius = SHADOW_RADIUS * 3
-        path.addRoundRect(
-            rectF,
-            floatArrayOf(cornerRadius, cornerRadius, cornerRadius, cornerRadius, 0f, 0f, 0f, 0f),
-            Path.Direction.CW
-        )
+        rectF.set(0f, DEFAULT_SHADOW_RADIUS, width.toFloat(), height.toFloat())
+        val cornerRadius = config.cornerRadius
+        path.addRoundRect(rectF,
+                floatArrayOf(cornerRadius, cornerRadius, cornerRadius, cornerRadius, 0f, 0f, 0f, 0f),
+                Path.Direction.CW)
         path.close()
 
         canvas.drawPath(path, paint)
@@ -80,25 +80,74 @@ internal class BottomBar(context: Context, attrs: AttributeSet? = null) : Linear
                 val params = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)
                 addView(space, params)
             } else {
-                val view = inflate(context, R.layout.bottom_bar_item, null)
-                val params = LayoutParams(0, 220, itemWeight)
-                val icon = view.findViewById<ImageView>(R.id.iconImageView)
-                val title = view.findViewById<TextView>(R.id.title)
-                view.setOnClickListener { itemClickListener(currentIndex) }
-                val item = items[currentIndex++]
-                icon.setImageResource(item.icon)
-                title.isVisible = item.title != null
-                title.text = item.title
-                if(it==0) {
-//                    params.marginStart = 30
-                    view.updatePadding(20,20,0,0)
-//                    view.setBackgroundColor(Color.RED)
-                }
-//                else
-//                view.setBackgroundColor(Color.BLUE)
+                val view = inflate(context, R.layout.bottom_bar_item, null) as ConstraintLayout
+                view.layoutTransition.setDuration(150)
+                val params = LayoutParams(0, LayoutParams.MATCH_PARENT, itemWeight)
+                val isCurrent = currentIndex == currentSelectedIndex
+                val color = if (isCurrent) config.selectedTint else config.unSelectedTint
+                view.iconImageView.tint(color)
+                view.title.setTextColor(colorFrom(color))
 
+                val item = items[currentIndex++]
+                view.iconImageView.setImageResource(item.icon)
+                view.title.text = item.title
+                view.title.isVisible = isCurrent && item.title != null
+                if (items.size > 2) {
+                    when (it) {
+                        0 -> view.updatePadding(view.paddingTop, view.paddingTop, 0, 0)
+                        4 -> view.updatePadding(0, view.paddingTop, view.paddingTop, 0)
+                    }
+                }
                 addView(view, params)
+                bottomViews += view
+                configClickListeners()
             }
+        }
+    }
+
+    fun selectIndex(index: Int) {
+        if (index < 0 || index > bottomViews.size) {
+            throw ArrayIndexOutOfBoundsException("Index should be between 0 and ${bottomViews.size} ")
+        }
+        if (currentSelectedIndex == index) {
+            return
+        }
+        itemClickListener(index)
+        val oldSelectedIndex = currentSelectedIndex
+        currentSelectedIndex = index
+        val oldSelected = bottomViews[oldSelectedIndex]
+        val currentSelected = bottomViews[currentSelectedIndex]
+        animatorProvider?.animate(currentSelected) {
+            val selectedTint = config.selectedTint
+            currentSelected.iconImageView.tint(selectedTint)
+            currentSelected.title.setTextColor(ContextCompat.getColor(context, selectedTint))
+            currentSelected.title.isVisible = oldSelected.title.text.isNotEmpty()
+            currentSelected.clearAnimation()
+        }
+        animatorProvider?.animate(oldSelected) {
+            val unSelectedTint = config.unSelectedTint
+            oldSelected.iconImageView.tint(unSelectedTint)
+            oldSelected.title.setTextColor(colorFrom(unSelectedTint))
+            oldSelected.title.isVisible = false
+            oldSelected.clearAnimation()
+        }
+    }
+
+    private fun configClickListeners() {
+        bottomViews.forEachIndexed { index, viewGroup ->
+            viewGroup.setOnClickListener {
+                selectIndex(index)
+            }
+        }
+    }
+
+    private fun update() {
+        bottomViews.forEachIndexed { index, viewGroup ->
+            val color = if (index == currentSelectedIndex)
+                config.selectedTint else config.unSelectedTint
+            viewGroup.iconImageView.tint(color)
+            viewGroup.title.setTextColor(colorFrom(color))
+            paint.color = colorFrom(config.backgroundColor)
         }
     }
 }

@@ -6,7 +6,7 @@ import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 
 interface AnimatedView {
 
-    fun <V : View> animate(view: V, duration: Long = 120,
+    fun <V : View> animate(view: V, duration: Long = 200,
                            endAction: () -> Unit = {},
                            acton: V.() -> Unit) {
         val scaleFactor = 0.75f
