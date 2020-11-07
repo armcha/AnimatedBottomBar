@@ -69,7 +69,7 @@ internal class BottomBar(context: Context, attrs: AttributeSet? = null) : Linear
         canvas.drawPath(path, paint)
     }
 
-    fun onItemClick(body: (Int) -> Unit) {
+    fun onItemClick(body: (index: Int) -> Unit) {
         itemClickListener = body
     }
 
@@ -86,7 +86,7 @@ internal class BottomBar(context: Context, attrs: AttributeSet? = null) : Linear
                 view.layoutTransition.setDuration(100)
                 val params = LayoutParams(0, LayoutParams.MATCH_PARENT, itemWeight)
                 val isCurrent = currentIndex == currentSelectedIndex
-                val color = if (isCurrent) config.selectedTint else config.unSelectedTint
+                val color = if (isCurrent) config.selectedItemTint else config.unSelectedItemTint
                 view.iconImageView.tint(color)
                 view.title.setTextColor(colorFrom(color))
 
@@ -123,12 +123,12 @@ internal class BottomBar(context: Context, attrs: AttributeSet? = null) : Linear
         oldSelected.title.isVisible = false
 
         animatorProvider?.animate(currentSelected) {
-            val selectedTint = config.selectedTint
+            val selectedTint = config.selectedItemTint
             currentSelected.iconImageView.tint(selectedTint)
             currentSelected.title.setTextColor(ContextCompat.getColor(context, selectedTint))
         }
         animatorProvider?.animate(oldSelected) {
-            val unSelectedTint = config.unSelectedTint
+            val unSelectedTint = config.unSelectedItemTint
             oldSelected.iconImageView.tint(unSelectedTint)
             oldSelected.title.setTextColor(colorFrom(unSelectedTint))
         }
@@ -145,7 +145,7 @@ internal class BottomBar(context: Context, attrs: AttributeSet? = null) : Linear
     private fun update() {
         bottomViews.forEachIndexed { index, viewGroup ->
             val color = if (index == currentSelectedIndex)
-                config.selectedTint else config.unSelectedTint
+                config.selectedItemTint else config.unSelectedItemTint
             viewGroup.iconImageView.tint(color)
             viewGroup.title.setTextColor(colorFrom(color))
             paint.color = colorFrom(config.backgroundColor)

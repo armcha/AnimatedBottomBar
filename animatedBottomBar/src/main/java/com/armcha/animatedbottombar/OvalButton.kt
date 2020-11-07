@@ -12,25 +12,24 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
 import com.armcha.animatedbottombar.animator.AnimatedView
 
-internal class BottomBarOval(context: Context) : FrameLayout(context), AnimatedView {
+internal class OvalButton(context: Context) : FrameLayout(context), AnimatedView {
 
     companion object {
 
-        private const val SHADOW_RADIUS = 10f
+        private const val SHADOW_RADIUS = 25f
     }
 
     private val path = Path()
     private val ovalRectF = RectF()
-    private val iconImageView by lazy {
-        ImageView(context)
-    }
+    private val iconImageView by lazy { ImageView(context) }
     private val paint = Paint().apply {
         style = Paint.Style.FILL
         strokeWidth = 1f
         isAntiAlias = true
-        setShadowLayer(SHADOW_RADIUS, 0f, 0f, ContextCompat.getColor(context, R.color.gray_400))
+        setShadowLayer(SHADOW_RADIUS, 0f, 0f, ContextCompat.getColor(context, R.color.gray_600))
     }
-    private var config = OvalConfig(R.color.purple_500, R.color.white, R.drawable.bell_outline,
+
+    var config = OvalButtonConfig(R.color.purple_500, R.color.white, R.drawable.bell_outline,
             android.R.drawable.ic_menu_close_clear_cancel)
         set(value) {
             field = value
@@ -59,7 +58,7 @@ internal class BottomBarOval(context: Context) : FrameLayout(context), AnimatedV
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        val offset = SHADOW_RADIUS * 2
+        val offset = SHADOW_RADIUS
         ovalRectF.set(offset, offset, width.toFloat() - offset, height - offset)
         val cornerRadius = height / 2f
         val radii = List(8) { cornerRadius }.toFloatArray()

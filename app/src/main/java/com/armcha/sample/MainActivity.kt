@@ -2,8 +2,7 @@ package com.armcha.sample
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.armcha.animatedbottombar.BottomItem
-import com.armcha.animatedbottombar.FabItem
+import com.armcha.animatedbottombar.*
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -22,5 +21,24 @@ class MainActivity : AppCompatActivity() {
         items += BottomItem(R.drawable.at, "TITLE 3")
         items += BottomItem(R.drawable.at, "TITLE 4")
         animatedBottomBar.addBottomItems(items)
+
+        val bottomBarConfig = BottomBarConfig(R.color.white,selectedItemTint = R.color.purple_500,
+                unSelectedItemTint = R.color.black,cornerRadius = 50f)
+        animatedBottomBar.configBottomBar(bottomBarConfig)
+
+        val ovalButtonConfig = OvalButtonConfig(R.color.white,R.color.black,R.drawable.at,R.drawable.bell_outline)
+        animatedBottomBar.configOval(ovalButtonConfig)
+
+        animatedBottomBar.onFabClick {
+            log {
+                it
+            }
+        }
+
+        animatedBottomBar.onBottomItemClick {
+            log {
+                it
+            }
+        }
     }
 }
