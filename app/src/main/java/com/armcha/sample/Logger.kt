@@ -1,4 +1,4 @@
-package com.armcha.animatedbottombar
+package com.armcha.sample
 
 import android.util.Log
 

@@ -1,4 +1,4 @@
-package com.armcha.animatedbottombar.animator
+package com.armcha.animatedbottombar.animator.base
 
 import android.view.View
 import android.view.ViewPropertyAnimator

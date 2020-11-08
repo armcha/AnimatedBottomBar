@@ -1,4 +1,4 @@
-package com.armcha.animatedbottombar
+package com.armcha.animatedbottombar.widget
 
 import android.content.Context
 import android.graphics.Canvas
@@ -10,9 +10,13 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
-import com.armcha.animatedbottombar.animator.AnimatedView
+import com.armcha.animatedbottombar.R
+import com.armcha.animatedbottombar.animator.base.AnimatorProvider
+import com.armcha.animatedbottombar.colorFrom
+import com.armcha.animatedbottombar.config.OvalButtonConfig
+import com.armcha.animatedbottombar.tint
 
-internal class OvalButton(context: Context) : FrameLayout(context), AnimatedView {
+internal class OvalButton(context: Context) : FrameLayout(context) {
 
     companion object {
 
@@ -28,8 +32,9 @@ internal class OvalButton(context: Context) : FrameLayout(context), AnimatedView
         isAntiAlias = true
         setShadowLayer(SHADOW_RADIUS, 0f, 0f, ContextCompat.getColor(context, R.color.gray_600))
     }
+    var animatorProvider: AnimatorProvider? = null
 
-    var config = OvalButtonConfig(R.color.purple_500, R.color.white, R.drawable.bell_outline,
+    var config = OvalButtonConfig(colorFrom(R.color.purple_500), colorFrom(R.color.white), R.drawable.bell_outline,
             android.R.drawable.ic_menu_close_clear_cancel)
         set(value) {
             field = value
@@ -68,13 +73,13 @@ internal class OvalButton(context: Context) : FrameLayout(context), AnimatedView
     }
 
     fun onOpen() {
-        animate(iconImageView, acton = {
+        animatorProvider?.animate(iconImageView, acton = {
             iconImageView.setImageResource(config.closeIcon)
         })
     }
 
     fun onClose() {
-        animate(iconImageView, acton = {
+        animatorProvider?.animate(iconImageView, acton = {
             iconImageView.setImageResource(config.icon)
         })
     }
@@ -82,6 +87,6 @@ internal class OvalButton(context: Context) : FrameLayout(context), AnimatedView
     private fun update() {
         iconImageView.setImageResource(config.icon)
         iconImageView.tint(config.iconTint)
-        paint.color = ContextCompat.getColor(context, config.backgroundColor)
+        paint.color = config.backgroundColor
     }
 }

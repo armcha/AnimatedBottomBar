@@ -3,29 +3,21 @@ package com.armcha.animatedbottombar.animator
 import android.view.View
 import android.view.ViewPropertyAnimator
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import com.armcha.animatedbottombar.animator.base.Animator
 
-
-class DefaultAnimator : Animator {
-
-    companion object {
-        private const val SCALE_FACTOR = 0.75f
-        private const val DURATION = 160L
-    }
+class FadeAnimator : Animator {
 
     override fun startAnimation(view: View): ViewPropertyAnimator {
         return view.animate()
-                .alpha(0f)
-                .scaleX(SCALE_FACTOR)
-                .setDuration(DURATION)
+                .setDuration(200L)
                 .setInterpolator(FastOutSlowInInterpolator())
+                .alpha(0f)
     }
 
     override fun endAnimation(view: View): ViewPropertyAnimator {
-        view.scaleX = SCALE_FACTOR
         return view.animate()
-                .scaleX(1f)
+                .setDuration(200L)
+                .setInterpolator(FastOutSlowInInterpolator())
                 .alpha(1f)
-                .setListener(null)
-                .setDuration(DURATION)
     }
 }
