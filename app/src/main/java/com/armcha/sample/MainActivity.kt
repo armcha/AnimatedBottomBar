@@ -46,13 +46,13 @@ class MainActivity : AppCompatActivity() {
                 backgroundColor = color(R.color.white),
                 selectedItemTint = color(R.color.purple_500),
                 unSelectedItemTint = color(R.color.black),
-                cornerRadius = 50f, shouldShowTitle = false)
+                cornerRadius = 120f, shouldShowTitle = false)
         animatedBottomBar.configBottomBar(bottomBarConfig)
 
         animatedBottomBar.addFabItems(
                 FabItem(color(R.color.white), color(R.color.black), R.drawable.at),
-                FabItem(color(R.color.white), color(R.color.black), R.drawable.at),
-                FabItem(color(R.color.white), color(R.color.black), R.drawable.at))
+                FabItem(color(R.color.purple_500), color(R.color.black), R.drawable.at),
+                FabItem(color(R.color.teal_400), color(R.color.black), R.drawable.at))
 
         animatedBottomBar.addBottomItems(fourItems)
 
@@ -67,15 +67,17 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        animatedBottomBar.subMenuAnimationDuration = 500
+        animatedBottomBar.subMenuAnimationDuration = 400
     }
 
     private fun setUpViews() {
-        shouldShowTitleButton.text = "Should show title = ${bottomBarConfig.shouldShowTitle}"
+        fun getTitle() = if (!bottomBarConfig.shouldShowTitle) "Show title" else "Hide title"
+
+        shouldShowTitleButton.text = getTitle()
         shouldShowTitleButton.setOnClickListener {
             bottomBarConfig = bottomBarConfig.copy(shouldShowTitle = !bottomBarConfig.shouldShowTitle)
             animatedBottomBar.configBottomBar(bottomBarConfig)
-            shouldShowTitleButton.text = "Should show title = ${bottomBarConfig.shouldShowTitle}"
+            shouldShowTitleButton.text = getTitle()
         }
 
         menuItemChangeButton.setOnClickListener {
@@ -106,20 +108,23 @@ class MainActivity : AppCompatActivity() {
         }
 
         cornerRadiusSlider.value = bottomBarConfig.cornerRadius
+        cornerRadiusSlider.setLabelFormatter {
+            "Corner radius ${it.toInt()}"
+        }
         cornerRadiusSlider.addOnChangeListener { _, value, _ ->
             bottomBarConfig = bottomBarConfig.copy(cornerRadius = value)
             animatedBottomBar.configBottomBar(bottomBarConfig)
         }
 
         changeBackgroundColorButton.setOnClickListener {
-            showColorPicker{
+            showColorPicker {
                 bottomBarConfig = bottomBarConfig.copy(backgroundColor = it)
                 animatedBottomBar.configBottomBar(bottomBarConfig)
             }
         }
 
         changeOvalColorButton.setOnClickListener {
-            showColorPicker{
+            showColorPicker {
                 ovalButtonConfig = ovalButtonConfig.copy(backgroundColor = it)
                 animatedBottomBar.configOval(ovalButtonConfig)
             }

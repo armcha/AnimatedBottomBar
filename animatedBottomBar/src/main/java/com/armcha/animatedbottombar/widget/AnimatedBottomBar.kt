@@ -6,15 +6,16 @@ import android.util.AttributeSet
 import android.view.Gravity
 import android.view.View
 import android.view.ViewPropertyAnimator
+import android.view.animation.LinearInterpolator
 import android.view.animation.OvershootInterpolator
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import com.armcha.animatedbottombar.BottomItem
 import com.armcha.animatedbottombar.FabItem
 import com.armcha.animatedbottombar.R
+import com.armcha.animatedbottombar.animator.ScaleAndFadeAnimator
 import com.armcha.animatedbottombar.animator.base.Animator
 import com.armcha.animatedbottombar.animator.base.AnimatorProvider
-import com.armcha.animatedbottombar.animator.ScaleAndFadeAnimator
 import com.armcha.animatedbottombar.colorFrom
 import com.armcha.animatedbottombar.config.BottomBarConfig
 import com.armcha.animatedbottombar.config.OvalButtonConfig
@@ -34,7 +35,7 @@ class AnimatedBottomBar(context: Context, attrs: AttributeSet) : FrameLayout(con
     private var fabClickListener: (Int) -> Unit = {}
 
     var isOpened = false
-    var subMenuAnimationDuration = 300L
+    var subMenuAnimationDuration = 400L
 
     init {
         setUpBottomBar()
@@ -120,6 +121,8 @@ class AnimatedBottomBar(context: Context, attrs: AttributeSet) : FrameLayout(con
     }
 
     fun addBottomItems(bottomItems: List<BottomItem>) {
+        if (bottomItems.size < 2 || bottomItems.size > 4)
+            throw ArrayIndexOutOfBoundsException("Item size should be between [2,4]")
         bottomBar.addItems(bottomItems)
     }
 
@@ -143,16 +146,20 @@ class AnimatedBottomBar(context: Context, attrs: AttributeSet) : FrameLayout(con
         bottomBar.onItemClick(body)
     }
 
+    fun selectIndex(index: Int) {
+        bottomBar.selectIndex(index)
+    }
+
     fun open() {
+        dimView.animate().cancel()
         dimView.animate()
                 .alpha(1f)
-                .setDuration(200)
-                .withStartAction {
-                    dimView.isVisible = true
-                }
+                .setDuration((subMenuAnimationDuration * 0.5).toLong())
+                .withStartAction { dimView.isVisible = true }
                 .start()
 
         fabs.forEachIndexed { index, fab ->
+            fab.animate().cancel()
             val animator = fab.animate()
                     .setDuration(subMenuAnimationDuration)
                     .setInterpolator(overshootInterpolator)
@@ -167,19 +174,29 @@ class AnimatedBottomBar(context: Context, attrs: AttributeSet) : FrameLayout(con
                 }
                 else -> -ovalButton.height + heightFactor to fab.width * 1.5f
             }
-            animator.translationX(translationX.toFloat())
             animator.translationY(translationY.toFloat())
+            animator.setUpdateListener {
+                val value = it.animatedValue
+                if (value is Float && value > 0.5) {
+                    animator.translationX(translationX.toFloat())
+                            .setUpdateListener(null)
+                            .start()
+                }
+            }
             animator.start()
         }
         val barHeight = bottomBar.height.toFloat()
+        ovalButton.animate().cancel()
         ovalButton.animate()
-                .setDuration(300)
+                .setDuration((subMenuAnimationDuration * 0.75).toLong())
                 .translationY(-barHeight * 0.45f)
                 .setInterpolator(overshootInterpolator)
                 .start()
 
+        bottomBar.animate().cancel()
         bottomBar.animate()
-                .setDuration(300)
+                .setStartDelay(0)
+                .setDuration((subMenuAnimationDuration * 0.75).toLong())
                 .scaleY(0.95f)
                 .scaleX(0.95f)
                 .setInterpolator(overshootInterpolator)
@@ -193,22 +210,41 @@ class AnimatedBottomBar(context: Context, attrs: AttributeSet) : FrameLayout(con
     fun close() {
         resetViewState(dimView)
                 .alpha(0f)
-                .setDuration(200)
+                .setDuration((subMenuAnimationDuration * 0.5).toLong())
                 .withEndAction {
                     dimView.isVisible = false
                 }
                 .start()
-        fabs.forEach {
-            resetViewState(it)
-                    .setDuration(subMenuAnimationDuration)
-                    .start()
+        fabs.forEachIndexed { index, fab ->
+            val animator = fab.animate()
+                    .translationX(0f)
+                    .setDuration((subMenuAnimationDuration * 1.5).toLong())
+
+            if (fabs.size == 3 && index == 1) {
+                animator.translationY(0f)
+            } else {
+                animator.setInterpolator(LinearInterpolator())
+                        .setDuration((subMenuAnimationDuration / 4))
+                        .setUpdateListener {
+                            val value = it.animatedValue
+                            if (value is Float && value > .6) {
+                                animator.translationY(0f)
+                                        .setUpdateListener(null)
+                                        .start()
+
+
+                            }
+                        }
+                resetViewState(ovalButton)
+                        .setStartDelay(subMenuAnimationDuration / 4)
+                        .start()
+            }
+            animator.start()
         }
 
-        resetViewState(ovalButton)
-                .setInterpolator(overshootInterpolator)
+        resetViewState(bottomBar)
+                .setStartDelay(subMenuAnimationDuration / 4)
                 .start()
-
-        resetViewState(bottomBar).start()
 
         ovalButton.onClose()
         bottomBar.enable()
@@ -217,7 +253,7 @@ class AnimatedBottomBar(context: Context, attrs: AttributeSet) : FrameLayout(con
 
     private fun resetViewState(view: View): ViewPropertyAnimator {
         return view.animate()
-                .setDuration(300)
+                .setDuration((subMenuAnimationDuration * 0.75).toLong())
                 .scaleY(1.0f)
                 .scaleX(1.0f)
                 .translationY(0f)
