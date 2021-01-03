@@ -2,4 +2,5 @@
 <resources>
     <dimen name="bottom_bar_height">90dp</dimen>
     <dimen name="float_menu_button_radius">60dp</dimen>
+    <dimen name="oval_button_icon">30dp</dimen>
 </resources>

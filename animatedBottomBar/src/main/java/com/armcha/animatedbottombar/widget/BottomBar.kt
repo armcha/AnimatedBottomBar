@@ -1,7 +1,10 @@
 package com.armcha.animatedbottombar.widget
 
 import android.content.Context
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.ViewGroup
@@ -33,7 +36,7 @@ internal class BottomBar(context: Context, attrs: AttributeSet? = null) : Linear
         style = Paint.Style.FILL
         strokeWidth = 1f
         isAntiAlias = true
-        setShadowLayer(DEFAULT_SHADOW_RADIUS, 0f, 0f, ContextCompat.getColor(context, R.color.gray_600))
+        setShadowLayer(DEFAULT_SHADOW_RADIUS, 0f, 0f, ContextCompat.getColor(context, R.color.bottom_bar_shadow_color))
     }
 
     private var itemClickListener: (Int) -> Unit = {}
@@ -42,8 +45,8 @@ internal class BottomBar(context: Context, attrs: AttributeSet? = null) : Linear
     var currentSelectedIndex = 0
         private set
 
-    var config = BottomBarConfig(colorFrom(R.color.white), colorFrom(R.color.purple_500),
-            colorFrom(R.color.gray_600),
+    var config = BottomBarConfig(colorFrom(android.R.color.white), colorFrom(R.color.oval_red),
+            colorFrom(android.R.color.black),
             DEFAULT_CORNER_RADIUS, false)
         set(value) {
             field = value

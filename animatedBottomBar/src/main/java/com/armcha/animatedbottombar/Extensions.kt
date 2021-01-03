@@ -7,8 +7,8 @@ import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.core.content.ContextCompat
 
-fun ImageView.tint(@ColorInt color: Int) {
+internal fun ImageView.tint(@ColorInt color: Int) {
     imageTintList = ColorStateList.valueOf(color)
 }
 
-infix fun View.colorFrom(@ColorRes color: Int) = ContextCompat.getColor(context, color)
+internal infix fun View.colorFrom(@ColorRes color: Int) = ContextCompat.getColor(context, color)

@@ -9,15 +9,17 @@ import android.view.ViewPropertyAnimator
 import android.view.animation.LinearInterpolator
 import android.view.animation.OvershootInterpolator
 import android.widget.FrameLayout
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import com.armcha.animatedbottombar.BottomItem
 import com.armcha.animatedbottombar.FabItem
 import com.armcha.animatedbottombar.R
-import com.armcha.animatedbottombar.animator.ScaleAndFadeAnimator
-import com.armcha.animatedbottombar.animator.base.Animator
+import com.armcha.animatedbottombar.animator.ScaleAndFadeIconAnimator
+import com.armcha.animatedbottombar.animator.base.IconAnimator
 import com.armcha.animatedbottombar.animator.base.AnimatorProvider
 import com.armcha.animatedbottombar.colorFrom
 import com.armcha.animatedbottombar.config.BottomBarConfig
+import com.armcha.animatedbottombar.config.DimViewConfig
 import com.armcha.animatedbottombar.config.OvalButtonConfig
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -25,17 +27,22 @@ class AnimatedBottomBar(context: Context, attrs: AttributeSet) : FrameLayout(con
 
     private val bottomBarHeight by lazy { resources.getDimension(R.dimen.bottom_bar_height) }
     private val overshootInterpolator = OvershootInterpolator(1.5f)
-    private val bottomItemAnimatorProvider = AnimatorProvider(ScaleAndFadeAnimator())
-    private val ovalButtonAnimatorProvider = AnimatorProvider(ScaleAndFadeAnimator())
+    private val bottomItemAnimatorProvider = AnimatorProvider(ScaleAndFadeIconAnimator())
+    private val ovalButtonAnimatorProvider = AnimatorProvider(ScaleAndFadeIconAnimator())
     private val ovalButton by lazy { OvalButton(context) }
     private val bottomBar by lazy { BottomBar(context) }
-
     private val dimView by lazy { View(context) }
     private val fabs = mutableListOf<View>()
     private var fabClickListener: (Int) -> Unit = {}
+    private var dimConfig = DimViewConfig(colorFrom(R.color.bottom_bar_dim_color),
+            cancelableOnTouchOutside = true)
+        set(value) {
+            field = value
+            updateDimView()
+        }
+    private var isOpened = false
 
-    var isOpened = false
-    var subMenuAnimationDuration = 400L
+    var subMenuAnimationDuration = 500L
 
     init {
         setUpBottomBar()
@@ -43,7 +50,51 @@ class AnimatedBottomBar(context: Context, attrs: AttributeSet) : FrameLayout(con
         setUpDimView()
     }
 
-    private fun addFabItems(fabItemList: List<FabItem>) {
+    fun configOval(ovalButtonConfig: OvalButtonConfig) {
+        ovalButton.config = ovalButtonConfig
+    }
+
+    fun addBottomItems(firstItem: BottomItem, secondItem: BottomItem) {
+        bottomBar.addItems(listOf(firstItem, secondItem))
+    }
+
+    fun addBottomItems(firstItem: BottomItem, secondItem: BottomItem,
+                       thirdItem: BottomItem, fourthItem: BottomItem) {
+        bottomBar.addItems(listOf(firstItem, secondItem, thirdItem, fourthItem))
+    }
+
+    fun configBottomBar(bottomBarConfig: BottomBarConfig) {
+        bottomBar.config = bottomBarConfig
+    }
+
+    fun configDimView(dimViewConfig: DimViewConfig) {
+        dimConfig = dimViewConfig
+    }
+
+    fun setBottomItemIconAnimator(iconAnimator: IconAnimator) {
+        bottomItemAnimatorProvider.iconAnimator = iconAnimator
+    }
+
+    fun setOvalButtonIconAnimator(iconAnimator: IconAnimator) {
+        ovalButtonAnimatorProvider.iconAnimator = iconAnimator
+    }
+
+    fun onFabClick(body: (index: Int) -> Unit) {
+        fabClickListener = body
+    }
+
+    fun onBottomItemClick(body: (index: Int) -> Unit) {
+        bottomBar.onItemClick(body)
+    }
+
+    fun selectIndex(index: Int) {
+        bottomBar.selectIndex(index)
+    }
+
+    fun addFabItems(fabItemList: List<FabItem>) {
+        if (fabItemList.size < 2 || fabItemList.size > 3)
+            throw ArrayIndexOutOfBoundsException("Item size should be between [2,3]")
+
         val fabRadius = resources.getDimension(R.dimen.float_menu_button_radius).toInt()
         fabItemList.forEach {
             val fab = FloatingActionButton(context)
@@ -61,93 +112,9 @@ class AnimatedBottomBar(context: Context, attrs: AttributeSet) : FrameLayout(con
                 addView(this, fabParams)
                 fabs.add(this)
                 configClickListeners()
+                isInvisible = true
             }
         }
-    }
-
-    private fun configClickListeners() {
-        fabs.forEachIndexed { index, viewGroup ->
-            viewGroup.setOnClickListener {
-                fabClickListener(index)
-            }
-        }
-    }
-
-    private fun setUpBottomBar() {
-        bottomBar.animatorProvider = bottomItemAnimatorProvider
-
-        val params = LayoutParams(LayoutParams.MATCH_PARENT, bottomBarHeight.toInt(), Gravity.BOTTOM)
-        addView(bottomBar, params)
-        bottomBar.elevation = 11f
-        bottomBar.translationZ = 11f
-    }
-
-    private fun setUpOvalButton() {
-        val ovalWidth = bottomBarHeight * 0.95
-        val ovalHeight = bottomBarHeight * 1.5
-        val ovalParams = LayoutParams(ovalWidth.toInt(), ovalHeight.toInt(),
-                Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL)
-        addView(ovalButton, ovalParams)
-        ovalButton.animatorProvider = ovalButtonAnimatorProvider
-        ovalButton.elevation = 12f
-        ovalButton.translationZ = 12f
-        ovalButton.setOnClickListener {
-            if (isOpened) close() else open()
-        }
-    }
-
-    private fun setUpDimView() {
-        val dimParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-        with(dimView) {
-            alpha = 0f
-            isClickable = true
-            elevation = 12f
-            isVisible = false
-            setBackgroundColor(colorFrom(R.color.dim_color))
-            addView(this, dimParams)
-        }
-    }
-
-    fun addFabItems(firstItem: FabItem, secondItem: FabItem) {
-        addFabItems(listOf(firstItem, secondItem))
-    }
-
-    fun addFabItems(firstItem: FabItem, secondItem: FabItem, thirdItem: FabItem) {
-        addFabItems(listOf(firstItem, secondItem, thirdItem))
-    }
-
-    fun configOval(ovalButtonConfig: OvalButtonConfig) {
-        ovalButton.config = ovalButtonConfig
-    }
-
-    fun addBottomItems(bottomItems: List<BottomItem>) {
-        if (bottomItems.size < 2 || bottomItems.size > 4)
-            throw ArrayIndexOutOfBoundsException("Item size should be between [2,4]")
-        bottomBar.addItems(bottomItems)
-    }
-
-    fun configBottomBar(bottomBarConfig: BottomBarConfig) {
-        bottomBar.config = bottomBarConfig
-    }
-
-    fun setBottomItemAnimator(animator: Animator) {
-        bottomItemAnimatorProvider.animator = animator
-    }
-
-    fun setOvalButtonAnimator(animator: Animator) {
-        ovalButtonAnimatorProvider.animator = animator
-    }
-
-    fun onFabClick(body: (index: Int) -> Unit) {
-        fabClickListener = body
-    }
-
-    fun onBottomItemClick(body: (index: Int) -> Unit) {
-        bottomBar.onItemClick(body)
-    }
-
-    fun selectIndex(index: Int) {
-        bottomBar.selectIndex(index)
     }
 
     fun open() {
@@ -159,6 +126,7 @@ class AnimatedBottomBar(context: Context, attrs: AttributeSet) : FrameLayout(con
                 .start()
 
         fabs.forEachIndexed { index, fab ->
+            fab.isInvisible = false
             fab.animate().cancel()
             val animator = fab.animate()
                     .setDuration(subMenuAnimationDuration)
@@ -219,6 +187,9 @@ class AnimatedBottomBar(context: Context, attrs: AttributeSet) : FrameLayout(con
             val animator = fab.animate()
                     .translationX(0f)
                     .setDuration((subMenuAnimationDuration * 1.5).toLong())
+                    .withEndAction {
+                        fab.isInvisible = true
+                    }
 
             if (fabs.size == 3 && index == 1) {
                 animator.translationY(0f)
@@ -231,8 +202,6 @@ class AnimatedBottomBar(context: Context, attrs: AttributeSet) : FrameLayout(con
                                 animator.translationY(0f)
                                         .setUpdateListener(null)
                                         .start()
-
-
                             }
                         }
                 resetViewState(ovalButton)
@@ -249,6 +218,56 @@ class AnimatedBottomBar(context: Context, attrs: AttributeSet) : FrameLayout(con
         ovalButton.onClose()
         bottomBar.enable()
         isOpened = false
+    }
+
+    private fun configClickListeners() {
+        fabs.forEachIndexed { index, viewGroup ->
+            viewGroup.setOnClickListener {
+                fabClickListener(index)
+            }
+        }
+    }
+
+    private fun setUpBottomBar() {
+        bottomBar.animatorProvider = bottomItemAnimatorProvider
+
+        val params = LayoutParams(LayoutParams.MATCH_PARENT, bottomBarHeight.toInt(), Gravity.BOTTOM)
+        addView(bottomBar, params)
+        bottomBar.elevation = 11f
+        bottomBar.translationZ = 11f
+    }
+
+    private fun setUpOvalButton() {
+        val ovalWidth = bottomBarHeight * 0.95
+        val ovalHeight = bottomBarHeight * 1.5
+        val ovalParams = LayoutParams(ovalWidth.toInt(), ovalHeight.toInt(),
+                Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL)
+        addView(ovalButton, ovalParams)
+        ovalButton.animatorProvider = ovalButtonAnimatorProvider
+        ovalButton.elevation = 12f
+        ovalButton.translationZ = 12f
+        ovalButton.setOnClickListener {
+            if (isOpened) close() else open()
+        }
+    }
+
+    private fun setUpDimView() {
+        val dimParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+        dimView.alpha = 0f
+        dimView.isClickable = true
+        dimView.elevation = 12f
+        dimView.isVisible = false
+        dimView.setBackgroundColor(dimConfig.dimColor)
+        addView(dimView, dimParams)
+    }
+
+    private fun updateDimView() {
+        dimView.setBackgroundColor(dimConfig.dimColor)
+        if (dimConfig.cancelableOnTouchOutside) {
+            dimView.setOnClickListener { close() }
+        } else {
+            dimView.setOnClickListener(null)
+        }
     }
 
     private fun resetViewState(view: View): ViewPropertyAnimator {

@@ -1,33 +1,26 @@
 package com.armcha.sample
 
-import android.graphics.Color
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ArrayAdapter
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.armcha.animatedbottombar.*
-import com.armcha.animatedbottombar.animator.FadeAnimator
-import com.armcha.animatedbottombar.animator.RotationAnimator
-import com.armcha.animatedbottombar.animator.ScaleAndFadeAnimator
-import com.armcha.animatedbottombar.animator.TranslationXAnimator
+import com.armcha.animatedbottombar.BottomItem
+import com.armcha.animatedbottombar.FabItem
+import com.armcha.animatedbottombar.animator.FadeIconAnimator
+import com.armcha.animatedbottombar.animator.RotationIconAnimator
+import com.armcha.animatedbottombar.animator.ScaleAndFadeIconAnimator
+import com.armcha.animatedbottombar.animator.TranslationXIconAnimator
 import com.armcha.animatedbottombar.config.BottomBarConfig
+import com.armcha.animatedbottombar.config.DimViewConfig
 import com.armcha.animatedbottombar.config.OvalButtonConfig
 import com.github.dhaval2404.colorpicker.ColorPickerDialog
-import com.github.dhaval2404.colorpicker.MaterialColorPickerDialog
 import com.github.dhaval2404.colorpicker.model.ColorShape
-import com.github.dhaval2404.colorpicker.model.ColorSwatch
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
 
 class MainActivity : AppCompatActivity() {
 
-    private val fourItems = listOf(
-            BottomItem(R.drawable.at, "TITLE 1"),
-            BottomItem(R.drawable.at, "TITLE 2"),
-            BottomItem(R.drawable.at, "TITLE 3"),
-            BottomItem(R.drawable.at, "TITLE 4"))
-
-    private val twoItems = fourItems.subList(0, 2)
     private lateinit var bottomBarConfig: BottomBarConfig
     private lateinit var ovalButtonConfig: OvalButtonConfig
     private var isFourItems = true
@@ -44,30 +37,38 @@ class MainActivity : AppCompatActivity() {
     private fun setUpBottomBar() {
         bottomBarConfig = BottomBarConfig(
                 backgroundColor = color(R.color.white),
-                selectedItemTint = color(R.color.purple_500),
+                selectedItemTint = color(R.color.red),
                 unSelectedItemTint = color(R.color.black),
                 cornerRadius = 120f, shouldShowTitle = false)
         animatedBottomBar.configBottomBar(bottomBarConfig)
 
-        animatedBottomBar.addFabItems(
-                FabItem(color(R.color.white), color(R.color.black), R.drawable.at),
-                FabItem(color(R.color.purple_500), color(R.color.black), R.drawable.at),
-                FabItem(color(R.color.teal_400), color(R.color.black), R.drawable.at))
-
-        animatedBottomBar.addBottomItems(fourItems)
-
-        ovalButtonConfig = OvalButtonConfig(color(R.color.white), color(R.color.black), R.drawable.at, R.drawable.bell_outline)
+        ovalButtonConfig = OvalButtonConfig(color(R.color.oval_red), color(R.color.white), R.drawable.ic_oval_open,
+                R.drawable.ic_oval_close)
         animatedBottomBar.configOval(ovalButtonConfig)
 
-        animatedBottomBar.onFabClick { index ->
+        val dimViewConfig = DimViewConfig(color(R.color.dim_semi_transparent),
+                cancelableOnTouchOutside = true)
+        animatedBottomBar.configDimView(dimViewConfig)
 
+        animatedBottomBar.addFabItems(
+                listOf(FabItem(color(R.color.white), color(R.color.black), R.drawable.calendar),
+                        FabItem(color(R.color.white), color(R.color.black), R.drawable.cube),
+                        FabItem(color(R.color.white), color(R.color.black), R.drawable.book_open_variant)))
+
+        animatedBottomBar.addBottomItems(BottomItem(R.drawable.book_open_variant, "Library"),
+                BottomItem(R.drawable.at, "Email"),
+                BottomItem(R.drawable.bell_outline, "Notification"),
+                BottomItem(R.drawable.account_circle, "Account"))
+
+        animatedBottomBar.onFabClick { index ->
+//            Toast.makeText(this, "Clicked at index $index", Toast.LENGTH_SHORT).show()
         }
 
         animatedBottomBar.onBottomItemClick { index ->
-
+//            Toast.makeText(this, "Clicked at index $index", Toast.LENGTH_SHORT).show()
         }
 
-        animatedBottomBar.subMenuAnimationDuration = 400
+        animatedBottomBar.subMenuAnimationDuration = 500
     }
 
     private fun setUpViews() {
@@ -83,16 +84,20 @@ class MainActivity : AppCompatActivity() {
         menuItemChangeButton.setOnClickListener {
             if (isFourItems) {
                 isFourItems = false
-                animatedBottomBar.addBottomItems(twoItems)
+                animatedBottomBar.addBottomItems(BottomItem(R.drawable.book_open_variant, "Library"),
+                        BottomItem(R.drawable.at, "Email"))
             } else {
                 isFourItems = true
-                animatedBottomBar.addBottomItems(fourItems)
+                animatedBottomBar.addBottomItems(BottomItem(R.drawable.book_open_variant, "Library"),
+                        BottomItem(R.drawable.at, "Email"),
+                        BottomItem(R.drawable.bell_outline, "Notification"),
+                        BottomItem(R.drawable.account_circle, "Account"))
             }
         }
 
         val animators = listOf(
-                RotationAnimator(), CustomAnimator(), FadeAnimator(),
-                ScaleAndFadeAnimator(), TranslationXAnimator())
+                RotationIconAnimator(), CustomIconAnimator(), FadeIconAnimator(),
+                ScaleAndFadeIconAnimator(), TranslationXIconAnimator())
 
         val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1,
                 animators.map { it::class.java.simpleName })
@@ -101,9 +106,9 @@ class MainActivity : AppCompatActivity() {
         autoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
             val animator = animators[position]
             if (bottomItemsAnimation.isChecked) {
-                animatedBottomBar.setBottomItemAnimator(animator)
+                animatedBottomBar.setBottomItemIconAnimator(animator)
             } else {
-                animatedBottomBar.setOvalButtonAnimator(animator)
+                animatedBottomBar.setOvalButtonIconAnimator(animator)
             }
         }
 
@@ -135,7 +140,7 @@ class MainActivity : AppCompatActivity() {
         ColorPickerDialog
                 .Builder(this)
                 .setColorShape(ColorShape.CIRCLE)
-                .setDefaultColor(Color.WHITE)
+                .setDefaultColor(color(R.color.white))
                 .setColorListener { color, _ ->
                     onColorPicked(color)
                 }

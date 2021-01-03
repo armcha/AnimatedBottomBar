@@ -30,12 +30,12 @@ internal class OvalButton(context: Context) : FrameLayout(context) {
         style = Paint.Style.FILL
         strokeWidth = 1f
         isAntiAlias = true
-        setShadowLayer(SHADOW_RADIUS, 0f, 0f, ContextCompat.getColor(context, R.color.gray_600))
+        setShadowLayer(SHADOW_RADIUS, 0f, 0f, ContextCompat.getColor(context, R.color.bottom_bar_shadow_color))
     }
     var animatorProvider: AnimatorProvider? = null
 
-    var config = OvalButtonConfig(colorFrom(R.color.purple_500), colorFrom(R.color.white), R.drawable.bell_outline,
-            android.R.drawable.ic_menu_close_clear_cancel)
+    var config = OvalButtonConfig(colorFrom(R.color.oval_red), colorFrom(android.R.color.white), R.drawable.ic_oval_open,
+            R.drawable.ic_oval_close)
         set(value) {
             field = value
             update()
@@ -45,7 +45,9 @@ internal class OvalButton(context: Context) : FrameLayout(context) {
     init {
         setWillNotDraw(false)
         setLayerType(LAYER_TYPE_SOFTWARE, paint)
-        addView(iconImageView)
+        val iconSize = resources.getDimension(R.dimen.oval_button_icon).toInt()
+        val iconParams = LayoutParams(iconSize, iconSize)
+        addView(iconImageView, iconParams)
         iconImageView.updateLayoutParams<LayoutParams> {
             gravity = Gravity.CENTER
         }
