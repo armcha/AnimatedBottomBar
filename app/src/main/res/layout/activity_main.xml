@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -18,7 +17,7 @@
                 android:id="@+id/shouldShowTitleButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="50dp"
+                android:layout_marginTop="30dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -57,7 +56,7 @@
                 android:id="@+id/radioGroup"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
+                android:layout_marginTop="20dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -69,7 +68,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="20dp"
                     android:checked="true"
-                    android:text="Bottom items"
+                    android:text="Bottom bar icon animator"
                     app:layout_constraintEnd_toStartOf="@+id/ovalButtonAnimation"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/menuItemChangeButton" />
@@ -79,7 +78,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="false"
-                    android:text="Oval button"
+                    android:text="Oval icon animator"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/bottomItemsAnimation"
                     app:layout_constraintTop_toTopOf="@+id/bottomItemsAnimation" />
@@ -101,7 +100,7 @@
                     android:layout_height="wrap_content"
                     android:background="@color/white"
                     android:inputType="none"
-                    android:text="Animator" />
+                    android:text="Icon Animator" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -123,7 +122,7 @@
 
     </ScrollView>
 
-    <com.armcha.animatedbottombar.widget.AnimatedBottomBar
+    <io.armcha.animatedbottombar.widget.AnimatedBottomBar
         android:id="@+id/animatedBottomBar"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
